@@ -5,6 +5,8 @@ export interface ServerRuntimeOptions {
   port: number;
   allowRemote: boolean;
   basicAuth: string | null;
+  enableServer: boolean;
+  lanSharing: boolean;
 }
 
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
@@ -47,6 +49,8 @@ export function parseServerRuntimeOptions(
   let requestedPort = String(env.SLV_SERVER_PORT || "").trim() || undefined;
   let allowRemote = env.SLV_SERVER_PUBLIC === "1";
   let basicAuth = String(env.SLV_BASIC_AUTH || "").trim() || null;
+  let enableServer = env.SLV_ENABLE_SERVER !== "0";
+  let lanSharing = env.SLV_LAN_SHARING === "1";
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -61,6 +65,14 @@ export function parseServerRuntimeOptions(
     }
     if (arg === "--allow-remote" || arg === "--public") {
       allowRemote = true;
+      continue;
+    }
+    if (arg === "--no-server") {
+      enableServer = false;
+      continue;
+    }
+    if (arg === "--lan-sharing") {
+      lanSharing = true;
       continue;
     }
     if (arg === "--host" || arg.startsWith("--host=")) {
@@ -102,7 +114,9 @@ export function parseServerRuntimeOptions(
     host,
     port,
     allowRemote,
-    basicAuth
+    basicAuth,
+    enableServer,
+    lanSharing
   };
 }
 
@@ -116,6 +130,8 @@ export function applyServerRuntimeEnv(
   env.SLV_SERVER_PORT = String(options.port);
   env.SLV_SERVER_PUBLIC = options.allowRemote ? "1" : "0";
   env.SLV_BASIC_AUTH = options.basicAuth || "";
+  env.SLV_ENABLE_SERVER = options.enableServer ? "1" : "0";
+  env.SLV_LAN_SHARING = options.lanSharing ? "1" : "0";
 }
 
 export function formatServerUrl(options: Pick<ServerRuntimeOptions, "host" | "port">): string {

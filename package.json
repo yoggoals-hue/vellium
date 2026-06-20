@@ -1,5 +1,5 @@
 {
-  "name": "vellium",
+  "name": "vibevellium",
   "private": true,
   "version": "0.9.8",
   "type": "module",
@@ -87,8 +87,8 @@
     }
   },
   "build": {
-    "appId": "com.vellium.app",
-    "productName": "Vellium",
+    "appId": "com.vibevellium.app",
+    "productName": "VibeVellium",
     "directories": {
       "output": "release",
       "buildResources": "build"
