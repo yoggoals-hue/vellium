@@ -56,6 +56,17 @@ export const PROVIDER_PRESETS: ProviderPreset[] = [
     providerType: "koboldcpp"
   },
   {
+    key: "llamacpp",
+    label: "llama.cpp Server",
+    description: "llama.cpp OpenAI-compatible server (default port 8080)",
+    baseUrl: "http://localhost:8080/v1",
+    defaultId: "llamacpp",
+    defaultName: "llama.cpp (Local)",
+    apiKeyHint: "any string",
+    localOnly: true,
+    providerType: "openai"
+  },
+  {
     key: "openrouter",
     label: "OpenRouter",
     description: "OpenRouter unified API",
