@@ -707,6 +707,9 @@ export interface AppSettings {
   density: "comfortable" | "compact";
   censorshipMode: CensorshipMode;
   fullLocalMode: boolean;
+  enableServer: boolean;
+  lanSharing: boolean;
+  serverPort: number;
   useAlternateGreetings: boolean;
   responseLanguage: string;
   translateLanguage: string;
