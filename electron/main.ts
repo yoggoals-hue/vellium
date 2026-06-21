@@ -6,6 +6,7 @@ import { pathToFileURL } from "url";
 import { ManagedBackendManager } from "./managedBackends";
 import type { ManagedBackendConfig } from "../src/shared/types/contracts";
 import { applyServerRuntimeEnv, formatServerUrl, parseServerRuntimeOptions } from "../server/runtimeConfig";
+import type { Server as HttpServer } from "http";
 
 const isDev = !app.isPackaged;
 const runtimeOptions = parseServerRuntimeOptions(process.argv.slice(1));
@@ -66,6 +67,7 @@ let desktopPetStoreWriteTimer: NodeJS.Timeout | null = null;
 let desktopPetStore: DesktopPetStore = { pets: {} };
 let creatingWindow = false;
 let embeddedServerStart: Promise<void> | null = null;
+let embeddedServerInstance: HttpServer | null = null;
 const desktopPetPeerSeenAt = new Map<string, number>();
 const managedBackendManager = new ManagedBackendManager();
 
@@ -2357,7 +2359,14 @@ app.on("activate", () => {
 });
 
 // Bundled server runs in-process; no child teardown needed.
-app.on("before-quit", () => {
+app.on("before-quit", async () => {
   desktopPetWindow?.close();
-  void managedBackendManager.stopActive();
+  await managedBackendManager.stopActive();
+  // Stop the embedded Express server to release port and prevent zombie processes
+  try {
+    const { stopServer } = await import("../server/index.js");
+    await stopServer();
+  } catch (error) {
+    console.warn("Failed to stop server on quit:", error);
+  }
 });

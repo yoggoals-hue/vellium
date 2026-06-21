@@ -1,23 +1,42 @@
 import { pathToFileURL } from "url";
 import { applyServerRuntimeEnv, formatServerUrl, parseServerRuntimeOptions } from "./runtimeConfig.js";
 import { createApp } from "./app/createApp.js";
+import type { Server as HttpServer } from "http";
 
 const runtimeOptions = parseServerRuntimeOptions();
 applyServerRuntimeEnv(runtimeOptions);
 const app = createApp();
 
-export { app };
+let serverInstance: HttpServer | null = null;
+
+export { app, serverInstance };
 
 export function startServer(
   port: number = runtimeOptions.port,
   host: string = runtimeOptions.host
 ): Promise<number> {
   return new Promise((resolve, reject) => {
-    const server = app.listen(port, host, () => {
-      console.log(`Server running on ${formatServerUrl({ host, port })}`);
+    // Use 0.0.0.0 if LAN sharing is enabled, otherwise bind to loopback only
+    const bindHost = runtimeOptions.lanSharing ? "0.0.0.0" : host;
+    const server = app.listen(port, bindHost, () => {
+      console.log(`Server running on ${formatServerUrl({ host: bindHost, port })}`);
       resolve(port);
     });
     server.on("error", reject);
+    serverInstance = server;
+  });
+}
+
+export function stopServer(): Promise<void> {
+  return new Promise((resolve) => {
+    if (serverInstance) {
+      serverInstance.close(() => {
+        console.log("Server stopped");
+        resolve();
+      });
+    } else {
+      resolve();
+    }
   });
 }
 
